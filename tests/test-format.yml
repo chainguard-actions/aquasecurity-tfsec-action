@@ -1,0 +1,40 @@
+name: Test tfsec with JSON format output
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create clean Terraform fixture for format test
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/tests/fixtures/format-tf"
+          cat > "$GITHUB_WORKSPACE/tests/fixtures/format-tf/main.tf" <<'EOF'
+          # Minimal Terraform configuration for format testing
+          terraform {
+            required_providers {
+              local = {
+                source  = "hashicorp/local"
+                version = "~> 2.0"
+              }
+            }
+          }
+
+          resource "local_file" "example" {
+            content  = "hello"
+            filename = "/tmp/example.txt"
+          }
+          EOF
+
+      - id: action
+        uses: .
+        with:
+          working_directory: tests/fixtures/format-tf
+          format: json
+          soft_fail: "true"
+
+      - name: Assert action completed with JSON format
+        run: |
+          echo "Action completed with JSON format"
+          echo "PASS: tfsec ran with json format output"

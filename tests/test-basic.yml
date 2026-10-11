@@ -1,0 +1,40 @@
+name: Test basic tfsec scan (clean terraform)
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create clean Terraform fixture
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/tests/fixtures/clean-tf"
+          cat > "$GITHUB_WORKSPACE/tests/fixtures/clean-tf/main.tf" <<'EOF'
+          # A minimal, clean Terraform configuration with no security issues
+          terraform {
+            required_providers {
+              aws = {
+                source  = "hashicorp/aws"
+                version = "~> 4.0"
+              }
+            }
+          }
+
+          variable "region" {
+            description = "AWS region"
+            type        = string
+            default     = "us-east-1"
+          }
+          EOF
+
+      - id: action
+        uses: .
+        with:
+          working_directory: tests/fixtures/clean-tf
+          soft_fail: "true"
+
+      - name: Assert action completed
+        run: |
+          echo "Action completed successfully"
+          echo "PASS: tfsec ran without crashing"

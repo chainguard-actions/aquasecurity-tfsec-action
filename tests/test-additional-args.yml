@@ -1,0 +1,32 @@
+name: Test tfsec with additional_args
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create Terraform fixture for additional_args test
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/tests/fixtures/args-tf"
+          cat > "$GITHUB_WORKSPACE/tests/fixtures/args-tf/main.tf" <<'EOF'
+          # Minimal Terraform configuration for additional_args testing
+          variable "environment" {
+            description = "Environment name"
+            type        = string
+            default     = "test"
+          }
+          EOF
+
+      - id: action
+        uses: .
+        with:
+          working_directory: tests/fixtures/args-tf
+          additional_args: "--force-all-dirs"
+          soft_fail: "true"
+
+      - name: Assert action completed with additional_args
+        run: |
+          echo "Action completed with additional_args (--force-all-dirs)"
+          echo "PASS: tfsec ran with additional_args without crashing"

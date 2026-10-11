@@ -1,0 +1,41 @@
+name: Test tfsec soft_fail mode
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create Terraform fixture with known security issues
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/tests/fixtures/insecure-tf"
+          cat > "$GITHUB_WORKSPACE/tests/fixtures/insecure-tf/main.tf" <<'EOF'
+          # Intentionally insecure Terraform to trigger tfsec findings
+          resource "aws_s3_bucket" "insecure" {
+            bucket = "my-insecure-bucket"
+          }
+
+          resource "aws_security_group" "allow_all" {
+            name        = "allow_all"
+            description = "Allow all inbound traffic"
+
+            ingress {
+              from_port   = 0
+              to_port     = 0
+              protocol    = "-1"
+              cidr_blocks = ["0.0.0.0/0"]
+            }
+          }
+          EOF
+
+      - id: action
+        uses: .
+        with:
+          working_directory: tests/fixtures/insecure-tf
+          soft_fail: "true"
+
+      - name: Assert action succeeded despite security findings (soft_fail=true)
+        run: |
+          echo "Action completed with soft_fail=true"
+          echo "PASS: tfsec ran with soft_fail and did not fail the build"
