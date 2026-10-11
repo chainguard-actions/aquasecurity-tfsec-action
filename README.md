@@ -9,6 +9,7 @@ Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at
 | Version | Tag | Upstream commit |
 |---------|-----|-----------------|
 | v1.0.0 | [`v1.0.0`](https://github.com/chainguard-actions/aquasecurity-tfsec-action/tree/v1.0.0) | [`a73ebc4`](https://github.com/aquasecurity/tfsec-action/commit/a73ebc46fba54691e25cbe901656e7b205fb9bf2) |
+| v1.0.3 | [`v1.0.3`](https://github.com/chainguard-actions/aquasecurity-tfsec-action/tree/v1.0.3) | [`b466648`](https://github.com/aquasecurity/tfsec-action/commit/b466648d6e39e7c75324f25d83891162a721f2d6) |
 
 ## Privacy
 
