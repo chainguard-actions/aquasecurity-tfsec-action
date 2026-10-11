@@ -1,0 +1,33 @@
+name: Test additional_args input
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create minimal Terraform fixture
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/hardened/tests/fixtures/tf-additional-args"
+          cat > "$GITHUB_WORKSPACE/hardened/tests/fixtures/tf-additional-args/main.tf" <<'EOF'
+          resource "null_resource" "example" {}
+          EOF
+
+      - id: action
+        uses: .
+        with:
+          working_directory: hardened/tests/fixtures/tf-additional-args
+          additional_args: "--verbose"
+          soft_fail: "true"
+
+      - name: Assert tfsec-return-code output is set
+        env:
+          RETURN_CODE: ${{ steps.action.outputs.tfsec-return-code }}
+        run: |
+          echo "tfsec-return-code: $RETURN_CODE"
+          if [ -z "$RETURN_CODE" ]; then
+            echo "FAIL: expected tfsec-return-code output to be set"
+            exit 1
+          fi
+          echo "PASS: tfsec-return-code is '$RETURN_CODE'"
