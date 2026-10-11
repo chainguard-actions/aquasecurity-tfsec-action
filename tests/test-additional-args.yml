@@ -1,0 +1,36 @@
+name: Test additional_args input
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Set up a git origin reachable inside the Docker container
+        run: |
+          git config user.email "test@example.com"
+          git config user.name "Test User"
+          rm -rf "$GITHUB_WORKSPACE/.git-remote"
+          git init --bare "$GITHUB_WORKSPACE/.git-remote"
+          git push "$GITHUB_WORKSPACE/.git-remote" HEAD:refs/heads/act-harness
+          git remote set-url origin "$GITHUB_WORKSPACE/.git-remote" 2>/dev/null || \
+            git remote add origin "$GITHUB_WORKSPACE/.git-remote"
+
+      - id: action
+        uses: .
+        with:
+          working_directory: "."
+          additional_args: "--verbose"
+          soft_fail: "true"
+
+      - name: Assert tfsec-return-code output is set
+        env:
+          RETURN_CODE: ${{ steps.action.outputs.tfsec-return-code }}
+        run: |
+          echo "tfsec-return-code: $RETURN_CODE"
+          if [ -z "$RETURN_CODE" ]; then
+            echo "FAIL: expected tfsec-return-code output to be set"
+            exit 1
+          fi
+          echo "PASS: tfsec-return-code is '$RETURN_CODE'"

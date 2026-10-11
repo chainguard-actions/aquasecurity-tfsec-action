@@ -1,0 +1,18 @@
+name: Test tfsec soft_fail mode
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - id: action
+        uses: .
+        with:
+          working_directory: tests/fixtures/tf-insecure
+          soft_fail: "true"
+
+      - name: Assert step succeeded despite security findings (soft_fail prevents build break)
+        run: |
+          echo "PASS: soft_fail mode worked - step succeeded even with security findings"
