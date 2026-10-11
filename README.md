@@ -1,0 +1,1 @@
+# aquasecurity-tfsec-action
